@@ -40,7 +40,7 @@ class TLC59711 {
   void begin(void);
 
   //Set intensity, between 0-100% for a PWM channel as a floating point number
-  void setIntensity(uint8_t chan, float intensity);
+  bool setIntensity(uint8_t chan, float intensity);
 
   //Must be called in order to transfer new PWM values to ICs
   //Initiates a batch transfer of PWM values for all channels to the ICs
@@ -49,7 +49,7 @@ class TLC59711 {
   protected:
 
   //directly set the PWM duty cycle of a PWM channel
-  void setPWM(uint8_t chan, uint16_t pwm);
+  inline bool setPWM(uint8_t chan, uint16_t pwm);
 
   //Buffer for storing PWM values for each channel before transfer to ICs
   uint16_t * pwmbuffer;

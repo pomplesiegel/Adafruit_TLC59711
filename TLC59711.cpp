@@ -89,26 +89,40 @@ void TLC59711::transferToICs(void)
 }
 
 //Set intensity, between 0-100% for a PWM channel as a floating point number
-void TLC59711::setIntensity(uint8_t chan, float intensity)
+bool TLC59711::setIntensity(uint8_t chan, float intensity)
 {
-  //ensure it's not out of range
-  intensity = constrain(intensity, 0, 100);
-  Serial.println("Chan " + String(chan) + " -> " + String(intensity) + '%' );
-  setPWM(chan, intensity * scalingFactor);
+  // Serial.println("Chan " + String(chan) + " -> " + String(intensity) + '%' );
+  return setPWM(chan, intensity * scalingFactor);
 }
 
 //directly set the PWM duty cycle of a PWM channel
-void TLC59711::setPWM(uint8_t chan, uint16_t pwm) {
+bool TLC59711::setPWM(uint8_t chan, uint16_t pwm) {
   if ( chan > highestChannel ) 
   {
-    Serial.println("PWM channel called out of range");
-    return;
+    // Serial.println("PWM channel called out of range");
+    return false;
   }
-  pwmbuffer[chan] = pwm;  //write value to buffer for this channel
+
+  //only write change to array if necessary
+  if( pwmbuffer[chan] != pwm)
+  {
+    pwmbuffer[chan] = pwm;  //write value to buffer for this channel
+    return true;
+  }
+  else
+    return false;
 }
 
 //Calls SPI.begin() - must be called only once
 void TLC59711::begin() 
 {
   SPI.begin();
+  
+  //Configure SPI settings for this IC
+  SPI.setBitOrder(MSBFIRST);
+  //Photon's SPI master clock generator runs at 60Mhz. 
+  //For stability (no flickering) we need the SPI clock 
+  //running at < 1Mhz. 60/64 = ~.93Mhz
+  SPI.setClockDivider(SPI_CLOCK_DIV64);
+  SPI.setDataMode(SPI_MODE0);
 }
